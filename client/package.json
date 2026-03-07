@@ -1,17 +1,16 @@
 {
-  "name": "NOTE_TAKING_APP-client",
+  "name": "notara-client",
   "private": true,
-  "version": "0.0.0",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
     "@tiptap/core": "^2.1.13",
     "@tiptap/extension-character-count": "^2.1.13",
-    "@tiptap/extension-color": "^2.1.13",
     "@tiptap/extension-highlight": "^2.1.13",
     "@tiptap/extension-link": "^2.1.13",
     "@tiptap/extension-placeholder": "^2.1.13",
