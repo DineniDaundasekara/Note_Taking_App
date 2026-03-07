@@ -6,34 +6,48 @@ const NotesContext = createContext(null)
 
 export function NotesProvider({ children }) {
   const [notes, setNotes] = useState([])
+  const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [activeTag, setActiveTag] = useState('')
-  const [showArchived, setShowArchived] = useState(false)
-  const searchTimeout = useRef(null)
+  const [activeFilter, setActiveFilter] = useState({ archived: false, favorite: false, priority: '', status: '' })
+  const [viewMode, setViewMode] = useState('grid')
+  const [sortBy, setSortBy] = useState('-updatedAt')
+  const searchRef = useRef(null)
 
   const fetchNotes = useCallback(async (params = {}) => {
     setLoading(true)
     try {
-      const query = new URLSearchParams({
-        ...(params.search && { search: params.search }),
-        ...(params.tag && { tag: params.tag }),
-        archived: params.archived || 'false',
-      }).toString()
-      const res = await api.get(`/notes?${query}`)
-      setNotes(res.data.notes)
+      const q = new URLSearchParams()
+      if (params.search) q.set('search', params.search)
+      if (params.tag) q.set('tag', params.tag)
+      if (params.priority) q.set('priority', params.priority)
+      if (params.status) q.set('status', params.status)
+      if (params.overdue) q.set('overdue', 'true')
+      q.set('archived', params.archived ? 'true' : 'false')
+      q.set('favorite', params.favorite ? 'true' : 'false')
+      q.set('sort', params.sort || sortBy)
+
+      const { data } = await api.get(`/notes?${q}`)
+      setNotes(data.notes)
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to load notes')
-    } finally {
-      setLoading(false)
-    }
+    } finally { setLoading(false) }
+  }, [sortBy])
+
+  const fetchStats = useCallback(async () => {
+    try {
+      const { data } = await api.get('/notes/stats')
+      setStats(data)
+    } catch { }
   }, [])
 
   const createNote = useCallback(async (data) => {
     const res = await api.post('/notes', data)
     setNotes(prev => [res.data.note, ...prev])
+    await fetchStats()
     return res.data.note
-  }, [])
+  }, [fetchStats])
 
   const updateNote = useCallback(async (id, data) => {
     const res = await api.put(`/notes/${id}`, data)
@@ -44,6 +58,14 @@ export function NotesProvider({ children }) {
   const deleteNote = useCallback(async (id) => {
     await api.delete(`/notes/${id}`)
     setNotes(prev => prev.filter(n => n._id !== id))
+    await fetchStats()
+  }, [fetchStats])
+
+  const duplicateNote = useCallback(async (id) => {
+    const res = await api.post(`/notes/${id}/duplicate`)
+    setNotes(prev => [res.data.note, ...prev])
+    toast.success('Note duplicated!')
+    return res.data.note
   }, [])
 
   const addCollaborator = useCallback(async (noteId, email, permission) => {
@@ -66,25 +88,36 @@ export function NotesProvider({ children }) {
 
   const handleSearch = useCallback((query) => {
     setSearchQuery(query)
-    clearTimeout(searchTimeout.current)
-    searchTimeout.current = setTimeout(() => {
-      fetchNotes({ search: query, tag: activeTag, archived: showArchived ? 'true' : 'false' })
+    clearTimeout(searchRef.current)
+    searchRef.current = setTimeout(() => {
+      fetchNotes({ search: query, tag: activeTag, ...activeFilter, sort: sortBy })
     }, 350)
-  }, [fetchNotes, activeTag, showArchived])
+  }, [fetchNotes, activeTag, activeFilter, sortBy])
+
+  const applyFilter = useCallback((filter) => {
+    const next = { ...activeFilter, ...filter }
+    setActiveFilter(next)
+    fetchNotes({ search: searchQuery, tag: activeTag, ...next, sort: sortBy })
+  }, [fetchNotes, searchQuery, activeTag, activeFilter, sortBy])
 
   const handleTagFilter = useCallback((tag) => {
     setActiveTag(tag)
-    fetchNotes({ search: searchQuery, tag, archived: showArchived ? 'true' : 'false' })
-  }, [fetchNotes, searchQuery, showArchived])
+    fetchNotes({ search: searchQuery, tag, ...activeFilter, sort: sortBy })
+  }, [fetchNotes, searchQuery, activeFilter, sortBy])
+
+  const handleSort = useCallback((sort) => {
+    setSortBy(sort)
+    fetchNotes({ search: searchQuery, tag: activeTag, ...activeFilter, sort })
+  }, [fetchNotes, searchQuery, activeTag, activeFilter])
 
   const allTags = [...new Set(notes.flatMap(n => n.tags || []))].sort()
 
   return (
     <NotesContext.Provider value={{
-      notes, loading, searchQuery, activeTag, showArchived, allTags,
-      fetchNotes, createNote, updateNote, deleteNote,
+      notes, stats, loading, searchQuery, activeTag, activeFilter, viewMode, sortBy, allTags,
+      setViewMode, fetchNotes, fetchStats, createNote, updateNote, deleteNote, duplicateNote,
       addCollaborator, updateCollaborator, removeCollaborator,
-      handleSearch, handleTagFilter, setShowArchived
+      handleSearch, handleTagFilter, applyFilter, handleSort
     }}>
       {children}
     </NotesContext.Provider>

@@ -3,68 +3,186 @@
 @tailwind utilities;
 
 @layer base {
-  html { @apply scroll-smooth; }
-  body { @apply bg-parchment-50 text-ink-900 font-sans antialiased; }
-  * { @apply box-border; }
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-parchment-50 text-ink-900 font-sans antialiased;
+  }
 }
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center gap-2 px-4 py-2.5 bg-ink-900 text-parchment-50 rounded-lg font-medium text-sm
-           transition-all duration-150 hover:bg-ink-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center gap-2 px-4 py-2.5 bg-ink-900 text-parchment-50 rounded-lg font-medium text-sm transition-all duration-150 hover:bg-ink-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
   }
+
   .btn-secondary {
-    @apply inline-flex items-center gap-2 px-4 py-2.5 bg-parchment-100 text-ink-800 rounded-lg font-medium text-sm
-           border border-ink-200 transition-all duration-150 hover:bg-parchment-200 active:scale-[0.98];
+    @apply inline-flex items-center gap-2 px-4 py-2.5 bg-parchment-100 text-ink-800 rounded-lg font-medium text-sm border border-ink-200 transition-all duration-150 hover:bg-parchment-200 active:scale-[0.98];
   }
+
   .btn-ghost {
-    @apply inline-flex items-center gap-2 px-3 py-2 text-ink-600 rounded-lg text-sm
-           transition-all duration-150 hover:bg-ink-100 hover:text-ink-900 active:scale-[0.98];
+    @apply inline-flex items-center gap-2 px-3 py-2 text-ink-600 rounded-lg text-sm transition-all duration-150 hover:bg-ink-100 hover:text-ink-900 active:scale-[0.98];
   }
+
   .btn-danger {
-    @apply inline-flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-lg font-medium text-sm
-           transition-all duration-150 hover:bg-red-700 active:scale-[0.98];
+    @apply inline-flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-lg font-medium text-sm transition-all duration-150 hover:bg-red-700 active:scale-[0.98];
   }
+
   .input-field {
-    @apply w-full px-3.5 py-2.5 bg-white border border-ink-200 rounded-lg text-sm text-ink-900
-           placeholder:text-ink-400 transition-all duration-150
-           focus:outline-none focus:ring-2 focus:ring-ink-900/20 focus:border-ink-400;
+    @apply w-full px-3.5 py-2.5 bg-white border border-ink-200 rounded-lg text-sm text-ink-900 placeholder:text-ink-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-ink-900/20 focus:border-ink-400;
   }
+
   .card {
     @apply bg-white rounded-xl border border-ink-100 shadow-note transition-all duration-200;
   }
+
   .card-hover {
-    @apply hover:shadow-note-hover hover:-translate-y-0.5;
+    @apply hover:shadow-note-hover hover:-translate-y-0.5 cursor-pointer;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium;
   }
 }
 
-/* Tiptap editor styles */
-.ProseMirror { outline: none; min-height: 300px; line-height: 1.8; color: #3b342d; }
+.priority-high {
+  @apply bg-red-100 text-red-700;
+}
+
+.priority-medium {
+  @apply bg-parchment-100 text-parchment-700;
+}
+
+.priority-low {
+  @apply bg-sage-100 text-sage-700;
+}
+
+.priority-none {
+  @apply bg-ink-100 text-ink-500;
+}
+
+.status-active {
+  @apply bg-sage-100 text-sage-700;
+}
+
+.status-draft {
+  @apply bg-ink-100 text-ink-500;
+}
+
+.status-completed {
+  @apply bg-blue-100 text-blue-700;
+}
+
+.ProseMirror {
+  outline: none;
+  min-height: 320px;
+  line-height: 1.85;
+  color: #3b342d;
+}
+
 .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
-  float: left; color: #9a8d7c; pointer-events: none; height: 0; font-style: italic;
+  float: left;
+  color: #9a8d7c;
+  pointer-events: none;
+  height: 0;
+  font-style: italic;
 }
-.ProseMirror h1 { @apply text-2xl font-display font-bold text-ink-950 mb-3 mt-6; }
-.ProseMirror h2 { @apply text-xl font-display font-semibold text-ink-900 mb-2 mt-5; }
-.ProseMirror h3 { @apply text-lg font-medium text-ink-800 mb-2 mt-4; }
-.ProseMirror p  { @apply mb-3 text-ink-800; }
-.ProseMirror ul { @apply list-disc pl-5 mb-3 space-y-1; }
-.ProseMirror ol { @apply list-decimal pl-5 mb-3 space-y-1; }
-.ProseMirror li { @apply text-ink-800; }
-.ProseMirror blockquote { @apply border-l-4 border-parchment-400 pl-4 my-3 italic text-ink-600; }
-.ProseMirror code { @apply font-mono text-sm bg-ink-100 text-ink-700 px-1.5 py-0.5 rounded; }
-.ProseMirror pre { @apply font-mono text-sm bg-ink-900 text-parchment-100 p-4 rounded-lg mb-3 overflow-x-auto; }
-.ProseMirror pre code { @apply bg-transparent text-parchment-100 p-0; }
-.ProseMirror strong { @apply font-semibold text-ink-950; }
-.ProseMirror a { @apply text-sage-600 underline hover:text-sage-700; }
-.ProseMirror mark { @apply bg-parchment-200 text-ink-900 px-0.5 rounded; }
-.ProseMirror ul[data-type="taskList"] { @apply list-none pl-0; }
-.ProseMirror ul[data-type="taskList"] li { @apply flex items-start gap-2; }
-.ProseMirror ul[data-type="taskList"] li > label { @apply flex items-center gap-2 cursor-pointer; }
-.ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"] { @apply w-4 h-4 rounded accent-sage-500 cursor-pointer; }
-.ProseMirror ul[data-type="taskList"] li[data-checked="true"] > div p { @apply line-through text-ink-400; }
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { @apply bg-transparent; }
-::-webkit-scrollbar-thumb { @apply bg-ink-300 rounded-full; }
-::-webkit-scrollbar-thumb:hover { @apply bg-ink-400; }
+.ProseMirror h1 {
+  @apply text-2xl font-display font-bold text-ink-950 mb-3 mt-6;
+}
+
+.ProseMirror h2 {
+  @apply text-xl font-display font-semibold text-ink-900 mb-2 mt-5;
+}
+
+.ProseMirror h3 {
+  @apply text-lg font-medium text-ink-800 mb-2 mt-4;
+}
+
+.ProseMirror p {
+  @apply mb-3 text-ink-800;
+}
+
+.ProseMirror ul {
+  @apply list-disc pl-5 mb-3 space-y-1;
+}
+
+.ProseMirror ol {
+  @apply list-decimal pl-5 mb-3 space-y-1;
+}
+
+.ProseMirror li {
+  @apply text-ink-800;
+}
+
+.ProseMirror blockquote {
+  @apply border-l-4 border-parchment-400 pl-4 my-3 italic text-ink-600;
+}
+
+.ProseMirror code {
+  @apply font-mono text-sm bg-ink-100 text-ink-700 px-1.5 py-0.5 rounded;
+}
+
+.ProseMirror pre {
+  @apply font-mono text-sm bg-ink-900 text-parchment-100 p-4 rounded-lg mb-3 overflow-x-auto;
+}
+
+.ProseMirror pre code {
+  @apply bg-transparent text-parchment-100 p-0;
+}
+
+.ProseMirror strong {
+  @apply font-semibold text-ink-950;
+}
+
+.ProseMirror a {
+  @apply text-sage-600 underline hover:text-sage-700;
+}
+
+.ProseMirror mark {
+  @apply bg-parchment-200 text-ink-900 px-0.5 rounded;
+}
+
+.ProseMirror hr {
+  @apply border-ink-200 my-4;
+}
+
+.ProseMirror ul[data-type="taskList"] {
+  @apply list-none pl-0;
+}
+
+.ProseMirror ul[data-type="taskList"] li {
+  @apply flex items-start gap-2 mb-1;
+}
+
+.ProseMirror ul[data-type="taskList"] li>label {
+  @apply flex items-center gap-2 cursor-pointer mt-0.5;
+}
+
+.ProseMirror ul[data-type="taskList"] li>label input[type="checkbox"] {
+  @apply w-4 h-4 rounded accent-sage-500 cursor-pointer;
+}
+
+.ProseMirror ul[data-type="taskList"] li[data-checked="true"]>div p {
+  @apply line-through text-ink-400;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-ink-300 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-ink-400;
+}
