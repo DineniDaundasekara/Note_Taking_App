@@ -12,18 +12,23 @@ export default function LoginPage() {
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    try {
-      await login(form.email, form.password)
-      toast.success('Welcome back!')
-      navigate('/dashboard')
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Login failed')
-    } finally {
-      setLoading(false)
-    }
+  e.preventDefault()
+  if (!form.name.trim()) return toast.error('Name is required')
+  if (!form.email.trim()) return toast.error('Email is required')
+  if (form.password.length < 6) return toast.error('Password must be at least 6 characters')
+  setLoading(true)
+  try {
+    await register(form.name, form.email, form.password)
+    toast.success('Account created! Welcome to Notara.')
+    navigate('/dashboard')
+  } catch (err) {
+    console.error('Registration error:', err)
+    const msg = err.response?.data?.message || err.message || 'Registration failed'
+    toast.error(msg)
+  } finally {
+    setLoading(false)
   }
+}
 
   return (
     <div className="min-h-screen bg-parchment-50 flex">
