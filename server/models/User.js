@@ -3,44 +3,43 @@ const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
   name: {
-    type: String,
-    required: [true, 'Name is required'],
-    trim: true,
-    maxlength: [50, 'Name cannot exceed 50 characters']
+    type: String, required: [true, 'Name is required'],
+    trim: true, maxlength: [50, 'Name cannot exceed 50 characters']
   },
   email: {
-    type: String,
-    required: [true, 'Email is required'],
-    unique: true,
-    lowercase: true,
-    trim: true,
+    type: String, required: [true, 'Email is required'],
+    unique: true, lowercase: true, trim: true,
     match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email']
   },
   password: {
-    type: String,
-    required: [true, 'Password is required'],
-    minlength: [6, 'Password must be at least 6 characters'],
-    select: false
+    type: String, required: [true, 'Password is required'],
+    minlength: [6, 'Password must be at least 6 characters'], select: false
   },
   avatar: {
     type: String,
-    default: function() {
-      return `https://api.dicebear.com/7.x/initials/svg?seed=${this.name}`;
+    default: function () {
+      return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(this.name)}&backgroundColor=e1bf83&textColor=201c18`;
     }
+  },
+  bio: { type: String, maxlength: [200, 'Bio cannot exceed 200 characters'], default: '' },
+  preferences: {
+    defaultNoteColor: { type: String, default: '#ffffff' },
+    viewMode: { type: String, enum: ['grid', 'list'], default: 'grid' },
+    sortBy: { type: String, default: '-updatedAt' }
   }
 }, { timestamps: true });
 
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 12);
   next();
 });
 
-userSchema.methods.comparePassword = async function(candidatePassword) {
+userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-userSchema.methods.toJSON = function() {
+userSchema.methods.toJSON = function () {
   const obj = this.toObject();
   delete obj.password;
   return obj;
