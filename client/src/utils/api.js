@@ -1,9 +1,6 @@
 import axios from 'axios'
 
-const api = axios.create({
-  baseURL: '/api',
-  headers: { 'Content-Type': 'application/json' }
-})
+const api = axios.create({ baseURL: '/api', headers: { 'Content-Type': 'application/json' } })
 
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('token')
@@ -12,14 +9,15 @@ api.interceptors.request.use(config => {
 })
 
 api.interceptors.response.use(
-  response => response,
-  error => {
-    if (error.response?.status === 401) {
+  res => res,
+  err => {
+    console.error('[API]', err.response?.status, err.response?.data || err.message)
+    if (err.response?.status === 401) {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       window.location.href = '/login'
     }
-    return Promise.reject(error)
+    return Promise.reject(err)
   }
 )
 

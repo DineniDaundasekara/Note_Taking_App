@@ -5,14 +5,15 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import NotePage from './pages/NotePage'
+import ProfilePage from './pages/ProfilePage'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
   if (loading) return (
     <div className="min-h-screen bg-parchment-50 flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4 animate-fade-in">
+      <div className="flex flex-col items-center gap-4">
         <div className="w-10 h-10 rounded-full border-2 border-ink-900 border-t-transparent animate-spin" />
-        <p className="text-ink-500 text-sm font-medium tracking-wide">Loading Notara…</p>
+        <p className="text-ink-500 text-sm">Loading Notara…</p>
       </div>
     </div>
   )
@@ -32,12 +33,9 @@ export default function App() {
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
         <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
-        <Route path="/dashboard" element={
-          <ProtectedRoute><NotesProvider><DashboardPage /></NotesProvider></ProtectedRoute>
-        } />
-        <Route path="/notes/:id" element={
-          <ProtectedRoute><NotesProvider><NotePage /></NotesProvider></ProtectedRoute>
-        } />
+        <Route path="/dashboard" element={<ProtectedRoute><NotesProvider><DashboardPage /></NotesProvider></ProtectedRoute>} />
+        <Route path="/notes/:id" element={<ProtectedRoute><NotesProvider><NotePage /></NotesProvider></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><NotesProvider><ProfilePage /></NotesProvider></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </AuthProvider>

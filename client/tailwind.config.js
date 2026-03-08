@@ -11,7 +11,7 @@ export default {
       },
       colors: {
         ink: {
-          50:  '#f5f3f0', 100: '#e8e4de', 200: '#d4cdc4', 300: '#b8ae9f',
+          50: '#f5f3f0', 100: '#e8e4de', 200: '#d4cdc4', 300: '#b8ae9f',
           400: '#9a8d7c', 500: '#7d6e5d', 600: '#665a4c', 700: '#52483d',
           800: '#453d34', 900: '#3b342d', 950: '#201c18',
         },
@@ -33,7 +33,7 @@ export default {
         'scale-in': 'scaleIn 0.2s ease-out',
       },
       keyframes: {
-        fadeIn:  { from: { opacity: '0' }, to: { opacity: '1' } },
+        fadeIn: { from: { opacity: '0' }, to: { opacity: '1' } },
         slideUp: { from: { transform: 'translateY(12px)', opacity: '0' }, to: { transform: 'translateY(0)', opacity: '1' } },
         slideIn: { from: { transform: 'translateX(-12px)', opacity: '0' }, to: { transform: 'translateX(0)', opacity: '1' } },
         scaleIn: { from: { transform: 'scale(0.95)', opacity: '0' }, to: { transform: 'scale(1)', opacity: '1' } },
@@ -43,6 +43,7 @@ export default {
         'note-hover': '0 8px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)',
         'panel': '4px 0 24px rgba(0,0,0,0.08)',
         'modal': '0 24px 60px rgba(0,0,0,0.18)',
+        'dropdown': '0 8px 24px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.06)',
       }
     }
   },

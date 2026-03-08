@@ -1,6 +1,6 @@
 {
-  "name": "NOTE_TAKING_APP-server",
-  "version": "1.0.0",
+  "name": "notara-server",
+  "version": "2.0.0",
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js"

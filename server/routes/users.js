@@ -9,12 +9,13 @@ router.get('/search', async (req, res, next) => {
   try {
     const { q } = req.query;
     if (!q || q.length < 2) return res.json({ users: [] });
-
     const users = await User.find({
-      email: { $regex: q, $options: 'i' },
+      $or: [
+        { email: { $regex: q, $options: 'i' } },
+        { name: { $regex: q, $options: 'i' } }
+      ],
       _id: { $ne: req.user._id }
-    }).select('name email avatar').limit(10);
-
+    }).select('name email avatar').limit(8);
     res.json({ users });
   } catch (error) { next(error); }
 });

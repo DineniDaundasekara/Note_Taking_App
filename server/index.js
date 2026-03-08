@@ -7,21 +7,29 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const noteRoutes = require('./routes/notes');
 const userRoutes = require('./routes/users');
+const profileRoutes = require('./routes/profile');
 
 const app = express();
 
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? process.env.CLIENT_URL : 'http://localhost:5173',
+  origin: process.env.NODE_ENV === 'production'
+    ? process.env.CLIENT_URL
+    : ['http://localhost:5173', 'http://127.0.0.1:5173'],
   credentials: true
 }));
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '20mb' }));
 app.use(morgan('dev'));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/notes', noteRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/profile', profileRoutes);
 
-app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date() }));
+app.get('/api/health', (req, res) =>
+  res.json({ status: 'ok', timestamp: new Date(), version: '2.0.0' })
+);
+
+app.use((req, res) => res.status(404).json({ message: 'Route not found' }));
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -33,12 +41,12 @@ app.use((err, req, res, next) => {
 
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
-    console.log('✅ MongoDB connected');
+    console.log('✅ MongoDB connected to:', process.env.MONGODB_URI);
     const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+    app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
   })
   .catch(err => {
-    console.error('❌ MongoDB connection error:', err.message);
+    console.error('❌ MongoDB connection failed:', err.message);
     process.exit(1);
   });
 

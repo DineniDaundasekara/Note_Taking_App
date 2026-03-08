@@ -1,7 +1,6 @@
 {
-  "name": "NOTE-TAKING-APP",
-  "version": "1.0.0",
-  "description": "Collaborative Note-Taking App",
+  "name": "notara",
+  "version": "2.0.0",
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cd server && npm run dev",

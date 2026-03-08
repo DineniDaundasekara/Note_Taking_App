@@ -1,69 +1,48 @@
 const mongoose = require('mongoose');
 
-const collaboratorSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  permission: {
-    type: String,
-    enum: ['read', 'write'],
-    default: 'read'
-  },
-  addedAt: {
-    type: Date,
-    default: Date.now
-  }
+const checklistSchema = new mongoose.Schema({
+  text: { type: String, required: true },
+  completed: { type: Boolean, default: false },
+  order: { type: Number, default: 0 }
 });
 
 const noteSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: [true, 'Title is required'],
-    trim: true,
-    maxlength: [200, 'Title cannot exceed 200 characters']
-  },
-  content: {
-    type: String,
-    default: ''
-  },
-  contentText: {
-    type: String,
-    default: ''
-  },
-  owner: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  collaborators: [collaboratorSchema],
-  tags: [{
-    type: String,
-    trim: true,
-    lowercase: true,
-    maxlength: [30, 'Tag cannot exceed 30 characters']
+  title: { type: String, required: [true, 'Title is required'], maxlength: 200 },
+  description: { type: String, maxlength: 500, default: '' },
+  content: { type: String, default: '' },
+  contentText: { type: String, default: '' },
+  owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  collaborators: [{
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    permission: { type: String, enum: ['read', 'write'], default: 'read' }
   }],
-  color: {
-    type: String,
-    default: '#ffffff',
-    match: [/^#[0-9A-Fa-f]{6}$/, 'Please provide a valid hex color']
-  },
+  lastEditedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  tags: [String],
+  color: { type: String, default: '#ffffff' },
+  priority: { type: String, enum: ['none', 'low', 'medium', 'high'], default: 'none' },
+  status: { type: String, enum: ['active', 'draft', 'completed'], default: 'active' },
+  dueDate: { type: Date, default: null },
+  checklist: [checklistSchema],
   isPinned: { type: Boolean, default: false },
   isArchived: { type: Boolean, default: false },
-  lastEditedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  }
+  isFavorite: { type: Boolean, default: false },
+  viewCount: { type: Number, default: 0 },
+  coverImage: { type: String }
 }, { timestamps: true });
 
+// Text index for search
 noteSchema.index({ title: 'text', contentText: 'text', tags: 'text' });
-noteSchema.index({ owner: 1, createdAt: -1 });
-noteSchema.index({ 'collaborators.user': 1 });
 
-noteSchema.methods.hasAccess = function(userId) {
-  if (this.owner.toString() === userId.toString()) return 'owner';
-  const collab = this.collaborators.find(c => c.user.toString() === userId.toString());
+// Instance method to check access
+noteSchema.methods.hasAccess = function (userId) {
+  const getStrId = (val) => (val && val._id ? val._id.toString() : val ? val.toString() : null);
+  
+  const ownerId = getStrId(this.owner);
+  const targetId = userId.toString();
+
+  if (ownerId === targetId) return 'owner';
+
+  const collab = this.collaborators.find(c => getStrId(c.user) === targetId);
   return collab ? collab.permission : null;
 };
 
