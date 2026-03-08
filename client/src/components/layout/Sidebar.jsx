@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useNotes } from '../../context/NotesContext'
 import {
-  BookOpen, FileText, Archive, Tag, LogOut, Plus,
+  BookOpen, FileText, File, Archive, Tag, LogOut, Plus,
   Star, AlertCircle, ChevronDown, ChevronRight,
   Clock, CheckCircle2, User
 } from 'lucide-react'
@@ -91,7 +91,6 @@ export default function Sidebar({ onNewNote, onClose }) {
 
         <p className="px-3 pt-3 pb-1.5 text-xs font-semibold text-ink-600 uppercase tracking-wider">Status</p>
         {[
-          { value: 'active', label: 'Active', icon: File },
           { value: 'active', label: 'Active', icon: FileText },
           { value: 'draft', label: 'Draft', icon: Clock },
           { value: 'completed', label: 'Completed', icon: CheckCircle2 },
