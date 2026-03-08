@@ -23,7 +23,6 @@ export function NotesProvider({ children }) {
       if (params.tag) q.set('tag', params.tag)
       if (params.priority) q.set('priority', params.priority)
       if (params.status) q.set('status', params.status)
-      if (params.overdue) q.set('overdue', 'true')
       q.set('archived', params.archived ? 'true' : 'false')
       q.set('favorite', params.favorite ? 'true' : 'false')
       q.set('sort', params.sort || sortBy)
@@ -105,6 +104,12 @@ export function NotesProvider({ children }) {
     fetchNotes({ search: searchQuery, tag, ...activeFilter, sort: sortBy })
   }, [fetchNotes, searchQuery, activeFilter, sortBy])
 
+  const updateFilters = useCallback((filter, tag = '') => {
+    setActiveFilter(filter)
+    setActiveTag(tag)
+    fetchNotes({ search: searchQuery, tag, ...filter, sort: sortBy })
+  }, [fetchNotes, searchQuery, sortBy])
+
   const handleSort = useCallback((sort) => {
     setSortBy(sort)
     fetchNotes({ search: searchQuery, tag: activeTag, ...activeFilter, sort })
@@ -117,7 +122,7 @@ export function NotesProvider({ children }) {
       notes, stats, loading, searchQuery, activeTag, activeFilter, viewMode, sortBy, allTags,
       setViewMode, fetchNotes, fetchStats, createNote, updateNote, deleteNote, duplicateNote,
       addCollaborator, updateCollaborator, removeCollaborator,
-      handleSearch, handleTagFilter, applyFilter, handleSort
+      handleSearch, handleTagFilter, applyFilter, handleSort, updateFilters
     }}>
       {children}
     </NotesContext.Provider>

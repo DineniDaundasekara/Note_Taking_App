@@ -22,16 +22,40 @@ export default function DashboardPage() {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false)
   const [showSortMenu, setShowSortMenu] = useState(false)
 
-  useEffect(() => { fetchNotes(); fetchStats() }, [])
+  useEffect(() => {
+    fetchNotes({ search: searchQuery, tag: activeTag, ...activeFilter, sort: sortBy })
+    fetchStats()
+  }, [])
 
-  const pinned = notes.filter(n => n.isPinned && !n.isArchived)
-  const unpinned = notes.filter(n => !n.isPinned)
+  const isArchivedView = !!activeFilter.archived
+  
+  // Robust internal filtering to ensure UI matches active filters immediately
+  const filteredNotes = notes.filter(n => {
+    // 1. Archive status must match view
+    if (!!n.isArchived !== isArchivedView) return false
+    
+    // 2. Favorite filter
+    if (activeFilter.favorite && !n.isFavorite) return false
+    
+    // 3. Priority filter
+    if (activeFilter.priority && n.priority !== activeFilter.priority) return false
+    
+    // 4. Status filter
+    if (activeFilter.status && n.status !== activeFilter.status) return false
+    
+    // 5. Tag filter
+    if (activeTag && !n.tags?.includes(activeTag)) return false
+    
+    return true
+  })
+
+  const pinned = filteredNotes.filter(n => n.isPinned)
+  const unpinned = filteredNotes.filter(n => !n.isPinned)
   const currentSort = SORT_OPTIONS.find(s => s.value === sortBy)?.label || 'Last modified'
 
   let pageTitle = 'All Notes'
   if (activeFilter.archived) pageTitle = 'Archived'
   else if (activeFilter.favorite) pageTitle = 'Favorites'
-  else if (activeFilter.overdue) pageTitle = 'Overdue'
   else if (activeFilter.priority) pageTitle = `${activeFilter.priority.charAt(0).toUpperCase() + activeFilter.priority.slice(1)} Priority`
   else if (activeFilter.status) pageTitle = activeFilter.status.charAt(0).toUpperCase() + activeFilter.status.slice(1)
   else if (activeTag) pageTitle = `#${activeTag}`

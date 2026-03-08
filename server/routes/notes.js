@@ -17,11 +17,13 @@ function buildSort(sort = '-updatedAt') {
 // GET all notes
 router.get('/', async (req, res, next) => {
   try {
+    console.log('[DEBUG] GET /notes query:', req.query);
+    res.set('Cache-Control', 'no-store');
     const { search, tag, archived = 'false', pinned, favorite, priority, status, sort = '-updatedAt', overdue } = req.query;
 
     let filter = {
       $or: [{ owner: req.user._id }, { 'collaborators.user': req.user._id }],
-      isArchived: archived === 'true'
+      isArchived: archived === 'true' ? true : { $ne: true }
     };
 
     if (pinned === 'true') filter.isPinned = true;
@@ -30,6 +32,8 @@ router.get('/', async (req, res, next) => {
     if (priority) filter.priority = priority;
     if (status) filter.status = status;
     if (overdue === 'true') filter.dueDate = { $lt: new Date(), $ne: null };
+
+    console.log('[DEBUG] GET /notes filter:', JSON.stringify(filter, null, 2));
 
     let notes;
     if (search && search.trim()) {
@@ -53,15 +57,18 @@ router.get('/', async (req, res, next) => {
 router.get('/stats', async (req, res, next) => {
   try {
     const userId = req.user._id;
-    const baseFilter = { $or: [{ owner: userId }, { 'collaborators.user': userId }], isArchived: false };
+    res.set('Cache-Control', 'no-store');
+    const baseFilter = { $or: [{ owner: userId }, { 'collaborators.user': userId }], isArchived: { $ne: true } };
+    const overdueQuery = { ...baseFilter, dueDate: { $lt: new Date(), $ne: null } };
+    console.log('[DEBUG] stats overdueQuery:', JSON.stringify(overdueQuery, null, 2));
 
-    const [total, pinned, favorites, overdue, byPriority, recent] = await Promise.all([
+    const [total, pinned, overdueCount, favorites, byPriority, recent] = await Promise.all([
       Note.countDocuments(baseFilter),
       Note.countDocuments({ ...baseFilter, isPinned: true }),
+      Note.countDocuments(overdueQuery),
       Note.countDocuments({ ...baseFilter, isFavorite: true }),
-      Note.countDocuments({ ...baseFilter, dueDate: { $lt: new Date(), $ne: null } }),
       Note.aggregate([
-        { $match: { $or: [{ owner: userId }, { 'collaborators.user': userId }], isArchived: false } },
+        { $match: { $or: [{ owner: userId }, { 'collaborators.user': userId }], isArchived: { $ne: true } } },
         { $group: { _id: '$priority', count: { $sum: 1 } } }
       ]),
       Note.find(baseFilter).sort({ createdAt: -1 }).limit(5).select('title createdAt color priority')
@@ -70,7 +77,7 @@ router.get('/stats', async (req, res, next) => {
     const priorityMap = { none: 0, low: 0, medium: 0, high: 0 };
     byPriority.forEach(p => { priorityMap[p._id] = p.count; });
 
-    res.json({ total, pinned, favorites, overdue, byPriority: priorityMap, recent });
+    res.json({ total, pinned, favorites, overdue: overdueCount, byPriority: priorityMap, recent });
   } catch (error) { next(error); }
 });
 

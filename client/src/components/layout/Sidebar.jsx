@@ -3,19 +3,18 @@ import { useAuth } from '../../context/AuthContext'
 import { useNotes } from '../../context/NotesContext'
 import {
   BookOpen, FileText, File, Archive, Tag, LogOut, Plus,
-  Star, AlertCircle, ChevronDown, ChevronRight,
+  Star, ChevronDown, ChevronRight,
   Clock, CheckCircle2, User
 } from 'lucide-react'
 import { useState } from 'react'
 
 export default function Sidebar({ onNewNote, onClose }) {
   const { user, logout } = useAuth()
-  const { allTags, activeTag, handleTagFilter, activeFilter, applyFilter, stats } = useNotes()
+  const { allTags, activeTag, stats, updateFilters, activeFilter } = useNotes()
   const [tagsOpen, setTagsOpen] = useState(true)
 
   const navClick = (filter, tag = '') => {
-    applyFilter(filter)
-    handleTagFilter(tag)
+    updateFilters(filter, tag)
     if (onClose) onClose()
   }
 
@@ -53,7 +52,6 @@ export default function Sidebar({ onNewNote, onClose }) {
           {[
             { label: 'Total', value: stats.total, color: 'text-parchment-300' },
             { label: 'Pinned', value: stats.pinned, color: 'text-parchment-400' },
-            { label: 'Overdue', value: stats.overdue, color: stats.overdue > 0 ? 'text-red-400' : 'text-ink-500' },
           ].map(s => (
             <div key={s.label} className="bg-ink-900 rounded-lg px-2 py-2 text-center">
               <p className={`text-lg font-bold font-mono ${s.color}`}>{s.value}</p>
@@ -71,9 +69,6 @@ export default function Sidebar({ onNewNote, onClose }) {
           onClick={() => navClick({ archived: false, favorite: true, priority: '', status: '' })} count={stats?.favorites} color="text-parchment-400" />
         <NavItem icon={Archive} label="Archived" active={activeFilter.archived}
           onClick={() => navClick({ archived: true, favorite: false, priority: '', status: '' })} />
-        <NavItem icon={AlertCircle} label="Overdue" active={activeFilter.overdue}
-          onClick={() => navClick({ archived: false, favorite: false, overdue: true, priority: '', status: '' })}
-          count={stats?.overdue} color={stats?.overdue > 0 ? 'text-red-400' : undefined} />
 
         <p className="px-3 pt-3 pb-1.5 text-xs font-semibold text-ink-600 uppercase tracking-wider">Priority</p>
         {[

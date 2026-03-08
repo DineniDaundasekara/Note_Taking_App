@@ -1,55 +1,49 @@
-const express = require('express');
-const { body, validationResult } = require('express-validator');
-const User = require('../models/User');
-const { protect, generateToken } = require('../middleware/auth');
+const mongoose = require('mongoose');
 
-const router = express.Router();
-
-router.post('/register', [
-  body('name').trim().notEmpty().withMessage('Name is required').isLength({ max: 50 }),
-  body('email').isEmail().withMessage('Valid email required').normalizeEmail(),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
-], async (req, res, next) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(400).json({ message: errors.array()[0].msg });
-
-    const { name, email, password } = req.body;
-    const existing = await User.findOne({ email });
-    if (existing) return res.status(409).json({ message: 'An account with this email already exists' });
-
-    const user = await User.create({ name, email, password });
-    const token = generateToken(user._id);
-
-    res.status(201).json({
-      message: 'Account created successfully', token,
-      user: { _id: user._id, name: user.name, email: user.email, avatar: user.avatar, preferences: user.preferences }
-    });
-  } catch (error) { next(error); }
+const checklistSchema = new mongoose.Schema({
+  text: { type: String, required: true },
+  completed: { type: Boolean, default: false },
+  order: { type: Number, default: 0 }
 });
 
-router.post('/login', [
-  body('email').isEmail().withMessage('Valid email required').normalizeEmail(),
-  body('password').notEmpty().withMessage('Password is required')
-], async (req, res, next) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(400).json({ message: errors.array()[0].msg });
+const noteSchema = new mongoose.Schema({
+  title: { type: String, required: [true, 'Title is required'], maxlength: 200 },
+  description: { type: String, maxlength: 500, default: '' },
+  content: { type: String, default: '' },
+  contentText: { type: String, default: '' },
+  owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  collaborators: [{
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    permission: { type: String, enum: ['read', 'write'], default: 'read' }
+  }],
+  lastEditedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  tags: [String],
+  color: { type: String, default: '#ffffff' },
+  priority: { type: String, enum: ['none', 'low', 'medium', 'high'], default: 'none' },
+  status: { type: String, enum: ['active', 'draft', 'completed'], default: 'active' },
+  dueDate: { type: Date, default: null },
+  checklist: [checklistSchema],
+  isPinned: { type: Boolean, default: false },
+  isArchived: { type: Boolean, default: false },
+  isFavorite: { type: Boolean, default: false },
+  viewCount: { type: Number, default: 0 },
+  coverImage: { type: String }
+}, { timestamps: true });
 
-    const { email, password } = req.body;
-    const user = await User.findOne({ email }).select('+password');
-    if (!user || !(await user.comparePassword(password))) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
+// Text index for search
+noteSchema.index({ title: 'text', contentText: 'text', tags: 'text' });
 
-    const token = generateToken(user._id);
-    res.json({
-      message: 'Login successful', token,
-      user: { _id: user._id, name: user.name, email: user.email, avatar: user.avatar, preferences: user.preferences }
-    });
-  } catch (error) { next(error); }
-});
+// Instance method to check access
+noteSchema.methods.hasAccess = function (userId) {
+  const getStrId = (val) => (val && val._id ? val._id.toString() : val ? val.toString() : null);
+  
+  const ownerId = getStrId(this.owner);
+  const targetId = userId.toString();
 
-router.get('/me', protect, (req, res) => res.json({ user: req.user }));
+  if (ownerId === targetId) return 'owner';
 
-module.exports = router;
+  const collab = this.collaborators.find(c => getStrId(c.user) === targetId);
+  return collab ? collab.permission : null;
+};
+
+module.exports = mongoose.model('Note', noteSchema);
